@@ -1,14 +1,13 @@
 package org.kangning.church.auth.adapter.in;
 
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import org.kangning.church.auth.application.port.in.login.LoginUseCase;
 import org.kangning.church.auth.application.port.in.login.dto.LoginRequest;
 import org.kangning.church.auth.application.port.in.login.dto.LoginResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,4 +19,9 @@ public class AuthController {
         LoginResponse response = loginUseCase.login(request);
         return ResponseEntity.ok(response);
     }
+//    @PreAuthorize("hasRole('LEADER')")
+//    @GetMapping("/test")
+//    public String test() {
+//        return "你是 leader，已通過授權";
+//    }
 }
