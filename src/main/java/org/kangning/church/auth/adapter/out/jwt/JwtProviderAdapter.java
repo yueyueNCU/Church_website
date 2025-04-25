@@ -1,10 +1,12 @@
 package org.kangning.church.auth.adapter.out.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.kangning.church.auth.application.port.out.JwtProviderPort;
+import org.kangning.church.auth.domain.Role;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -39,5 +41,26 @@ public class JwtProviderAdapter implements JwtProviderPort {
                 .setExpiration(expiry)
                 .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    @Override
+    public String extractUsername(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    @Override
+    public List<Role> extractRoles(String token) {
+        List<String> rolesAsString = getClaims(token).get("roles", List.class);
+        return rolesAsString.stream()
+                .map(Role::valueOf) // Convert String → Enum
+                .toList();
+    }
+
+    private Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
