@@ -1,0 +1,4 @@
+security:
+  jwt:
+    secret: MySuperSecureJwtSecretKey_WhichShouldBeLongEnough123!
+    expiration-ms: 3600000
