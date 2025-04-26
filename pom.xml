@@ -17,7 +17,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <java.version>23</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -65,6 +65,21 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- 如果你還沒加，JUnit Jupiter 整合套件（會一併拉入 mockito-core） -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.17.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- **關鍵：** 切換到 subclass mock maker，避免 inline 自我附加失敗 -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-subclass</artifactId>
+            <version>5.17.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
