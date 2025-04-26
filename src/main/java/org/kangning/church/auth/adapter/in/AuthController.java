@@ -19,9 +19,4 @@ public class AuthController {
         LoginResponse response = loginUseCase.login(request);
         return ResponseEntity.ok(response);
     }
-//    @PreAuthorize("hasRole('LEADER')")
-//    @GetMapping("/test")
-//    public String test() {
-//        return "你是 leader，已通過授權";
-//    }
 }

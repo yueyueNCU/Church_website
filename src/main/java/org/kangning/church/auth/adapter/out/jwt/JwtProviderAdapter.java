@@ -16,11 +16,13 @@ import java.util.List;
 
 @Component
 public class JwtProviderAdapter implements JwtProviderPort {
+
     @Value("${security.jwt.secret}")
     private String secret;
 
-    @Value("${security.jwt.expiration-ms:3600000}") // 預設1小時
+    @Value("${security.jwt.expiration-ms}")
     private long expirationMs;
+
 
     private Key signingKey;
 
