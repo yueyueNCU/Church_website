@@ -1,16 +1,19 @@
 package org.kangning.church.auth.adapter.in;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.kangning.church.auth.application.port.in.user.dto.UpdatePasswordRequest;
 import org.kangning.church.testutil.TestJwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {"spring.profiles.active=test"})
@@ -19,6 +22,9 @@ class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void getMyInfo_no_token_should_return_unauthorized() throws Exception {
@@ -35,6 +41,36 @@ class UserControllerTest {
 
         mockMvc.perform(get("/api/user/me")
                         .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+
+    @Test
+    void updatePassword_no_token_should_return_unauthorized(){
+        try {
+            mockMvc.perform(put("/api/user/password"))
+                    .andExpect(status().isUnauthorized());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void updatePassword_with_token_should_return_成功更新密碼() throws Exception {
+        String token = TestJwtProvider.generateToken(
+                "john", List.of("LEADER")
+        );
+
+        var request = new UpdatePasswordRequest(
+                "123456",
+                "newPassword123",
+                "newPassword123"
+        );
+
+        mockMvc.perform(put("/api/user/password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
     }
 }

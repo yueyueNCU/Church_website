@@ -39,4 +39,8 @@ public class FakeUserRepository implements UserRepositoryPort {
     public Optional<User> findByUsername(String username) {
         return Optional.ofNullable(users.get(username));
     }
+
+    public void save(User user) {
+        users.put(user.getUsername(), user);
+    }
 }
