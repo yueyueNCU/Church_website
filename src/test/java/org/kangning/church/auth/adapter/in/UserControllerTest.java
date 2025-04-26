@@ -21,7 +21,13 @@ class UserControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getMyInfo_成功回傳使用者資訊() throws Exception {
+    void getMyInfo_no_token_should_return_unauthorized() throws Exception {
+        mockMvc.perform(get("/api/user/me"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getMyInfo_with_token_should_return_user_info() throws Exception {
         String token = TestJwtProvider.generateToken(
                 "john",
                 List.of("LEADER")
