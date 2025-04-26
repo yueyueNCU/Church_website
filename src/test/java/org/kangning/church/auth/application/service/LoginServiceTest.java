@@ -47,4 +47,32 @@ class LoginServiceTest {
         // Assert
         assertEquals("mock-token", response.token());
     }
+    @Test
+    void login_user_not_exist_should_return_exception(){
+        when(userRepository.findByUsername("notexist")).thenReturn(Optional.empty());
+
+        LoginRequest request = new LoginRequest("notexist", "123456");
+
+        // Act & Assert
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+            loginService.login(request);
+        });
+
+        assertEquals("使用者不存在", thrown.getMessage());
+    }
+
+    @Test
+    void login_user_password_wrong_should_return_exception(){
+        User mockUser = new User("john", "encoded-password", List.of(Role.LEADER));
+        when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches("123456", "encoded-password")).thenReturn(false);
+        LoginRequest request = new LoginRequest("john", "123456");
+
+        // Act & Assert
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+            loginService.login(request);
+        });
+
+        assertEquals("密碼錯誤", thrown.getMessage());
+    }
 }
