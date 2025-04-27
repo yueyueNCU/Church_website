@@ -31,11 +31,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // ✅ 新寫法，取代舊的 http.csrf().disable()
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/error"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/**").permitAll()    // 登入/註冊開放
+                        .requestMatchers("/api/public/**").permitAll()  // 公開API開放
+                        .requestMatchers("/api/**").authenticated()     // 其他API需要登入
+                        .anyRequest().permitAll()                       // 非API資源(比如favicon.ico)放行
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable)

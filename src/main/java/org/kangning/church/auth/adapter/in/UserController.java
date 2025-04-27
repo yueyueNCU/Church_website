@@ -30,4 +30,5 @@ public class UserController {
             Authentication authentication) {
         updatePasswordUseCase.updatePassword(authentication.getName(), request);
     }
+
 }
