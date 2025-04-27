@@ -1,5 +1,6 @@
 package org.kangning.church.auth.adapter.in;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.kangning.church.auth.application.port.in.user.GetMyInfoUseCase;
 import org.kangning.church.auth.application.port.in.user.UpdatePasswordUseCase;
@@ -25,7 +26,7 @@ public class UserController {
 
     @PutMapping("/password")
     public void updatePassword(
-            @RequestBody UpdatePasswordRequest request,
+            @Valid @RequestBody UpdatePasswordRequest request,
             Authentication authentication) {
         updatePasswordUseCase.updatePassword(authentication.getName(), request);
     }

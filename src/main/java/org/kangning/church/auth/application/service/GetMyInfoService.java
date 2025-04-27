@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.kangning.church.auth.application.port.in.user.GetMyInfoUseCase;
 import org.kangning.church.auth.application.port.in.user.dto.UserInfoResponse;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.common.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,6 +20,6 @@ public class GetMyInfoService implements GetMyInfoUseCase {
                         user.getUsername(),
                         user.getRoles()
                 ))
-                .orElseThrow(() -> new RuntimeException("使用者不存在"));
+                .orElseThrow(UserNotFoundException::new);
     }
 }

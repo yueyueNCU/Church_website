@@ -1,6 +1,7 @@
 package org.kangning.church.auth.adapter.in;
 
 import jakarta.annotation.PreDestroy;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.kangning.church.auth.application.port.in.login.LoginUseCase;
 import org.kangning.church.auth.application.port.in.login.dto.LoginRequest;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final LoginUseCase loginUseCase;
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request){
         LoginResponse response = loginUseCase.login(request);
         return ResponseEntity.ok(response);
     }

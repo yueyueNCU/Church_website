@@ -5,6 +5,10 @@ import org.kangning.church.auth.application.port.in.user.UpdatePasswordUseCase;
 import org.kangning.church.auth.application.port.in.user.dto.UpdatePasswordRequest;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.User;
+import org.kangning.church.common.NewPasswordSameAsOldException;
+import org.kangning.church.common.OldPasswordIncorrectException;
+import org.kangning.church.common.PasswordMismatchException;
+import org.kangning.church.common.UserNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,17 +22,17 @@ public class UpdatePasswordService implements UpdatePasswordUseCase {
     @Override
     public void updatePassword(String username, UpdatePasswordRequest request) {
         User user= userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("使用者不存在"));
+                .orElseThrow(UserNotFoundException::new);
 
         if (!passwordEncoder.matches(request.oldPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("舊密碼錯誤");
+            throw new OldPasswordIncorrectException();
         }
 
         if(request.oldPassword().equals(request.newPassword())){
-            throw new RuntimeException("新密碼不能與舊密碼相同");
+            throw new NewPasswordSameAsOldException();
         }
         if(!request.newPassword().equals(request.confirmPassword())) {
-            throw new RuntimeException("新密碼與確認密碼不相同");
+            throw new PasswordMismatchException();
         }
         String newHash = passwordEncoder.encode(request.newPassword());
         user.setPasswordHash(newHash);
