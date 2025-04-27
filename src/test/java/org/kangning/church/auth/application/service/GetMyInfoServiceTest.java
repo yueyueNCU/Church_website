@@ -6,6 +6,7 @@ import org.kangning.church.auth.application.port.in.user.GetMyInfoUseCase;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
+import org.kangning.church.common.UserNotFoundException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,9 +41,8 @@ class GetMyInfoServiceTest {
     void getMyInfo_user_not_exist_should_return_exception(){
         when(userRepositoryPort.findByUsername("notexist")).thenReturn(Optional.empty());
 
-        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+        RuntimeException thrown = assertThrows(UserNotFoundException.class, () -> {
             getMyInfoService.getMyInfo("notexist");
         });
-        assertEquals("使用者不存在", thrown.getMessage());
     }
 }

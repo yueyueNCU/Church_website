@@ -7,6 +7,8 @@ import org.kangning.church.auth.application.port.out.JwtProviderPort;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
+import org.kangning.church.common.PasswordIncorrectException;
+import org.kangning.church.common.UserNotFoundException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,11 +56,9 @@ class LoginServiceTest {
         LoginRequest request = new LoginRequest("notexist", "123456");
 
         // Act & Assert
-        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+        assertThrows(UserNotFoundException.class, () -> {
             loginService.login(request);
         });
-
-        assertEquals("使用者不存在", thrown.getMessage());
     }
 
     @Test
@@ -69,10 +69,8 @@ class LoginServiceTest {
         LoginRequest request = new LoginRequest("john", "123456");
 
         // Act & Assert
-        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+        assertThrows(PasswordIncorrectException.class, () -> {
             loginService.login(request);
         });
-
-        assertEquals("密碼錯誤", thrown.getMessage());
     }
 }

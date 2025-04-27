@@ -6,6 +6,10 @@ import org.kangning.church.auth.application.port.in.user.dto.UpdatePasswordReque
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
+import org.kangning.church.common.NewPasswordSameAsOldException;
+import org.kangning.church.common.OldPasswordIncorrectException;
+import org.kangning.church.common.PasswordMismatchException;
+import org.kangning.church.common.UserNotFoundException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,10 +37,9 @@ class UpdatePasswordServiceTest {
         when(userRepository.findByUsername("not exist")).thenReturn(Optional.empty());
 
         UpdatePasswordRequest updatePasswordRequest=new UpdatePasswordRequest("oldPassword", "newPassword", "confirmPassword");
-        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+        assertThrows(UserNotFoundException.class, () -> {
             updatePasswordService.updatePassword("not exist", updatePasswordRequest);
         });
-        assertEquals("使用者不存在", thrown.getMessage());
     }
     @Test
     void updatePassword_old_password_wrong_should_return_exception(){
@@ -45,10 +48,9 @@ class UpdatePasswordServiceTest {
         when(passwordEncoder.matches("wrongOldPassword", "encoded-password")).thenReturn(false);
 
         UpdatePasswordRequest updatePasswordRequest=new UpdatePasswordRequest("wrongOldPassword", "newPassword", "confirmPassword");
-        RuntimeException thrown =assertThrows(RuntimeException.class, () -> {
+        assertThrows(OldPasswordIncorrectException.class, () -> {
             updatePasswordService.updatePassword("john", updatePasswordRequest);
         });
-        assertEquals("舊密碼錯誤", thrown.getMessage());
     }
     @Test
     void updatePassword_new_password_same_old_password_should_return_exception(){
@@ -57,10 +59,9 @@ class UpdatePasswordServiceTest {
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
 
         UpdatePasswordRequest updatePasswordRequest=new UpdatePasswordRequest("oldPassword", "oldPassword", "confirmPassword");
-        RuntimeException thrown =assertThrows(RuntimeException.class, () -> {
+        assertThrows(NewPasswordSameAsOldException.class, () -> {
             updatePasswordService.updatePassword("john", updatePasswordRequest);
-            });
-        assertEquals("新密碼不能與舊密碼相同", thrown.getMessage());
+        });
     }
     @Test
     void updatePassword_new_password_not_same_confirm_password_should_return_exception(){
@@ -69,10 +70,9 @@ class UpdatePasswordServiceTest {
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
 
         UpdatePasswordRequest updatePasswordRequest=new UpdatePasswordRequest("oldPassword", "newPassword", "differentConfirmPassword");
-        RuntimeException thrown =assertThrows(RuntimeException.class, () -> {
+        assertThrows(PasswordMismatchException.class, () -> {
             updatePasswordService.updatePassword("john", updatePasswordRequest);
         });
-        assertEquals("新密碼與確認密碼不相同", thrown.getMessage());
     }
     @Test
     void updatePassword_success_should_update_password(){
