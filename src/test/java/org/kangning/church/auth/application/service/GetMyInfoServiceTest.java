@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kangning.church.auth.application.port.in.user.GetMyInfoUseCase;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.auth.domain.ChurchRole;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.UserNotFoundException;
@@ -28,14 +29,21 @@ class GetMyInfoServiceTest {
 
     @Test
     void getMyInfo_success_should_return_user_info() {
-        User user = new User("john", "encoded-password", List.of(Role.LEADER, Role.MEMBER));
+        User mockUser = new User("john",
+                "encoded-password",
+                List.of(),
+                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+        );
         when(userRepositoryPort.findByUsername("john"))
-                .thenReturn(Optional.of(user));
+                .thenReturn(Optional.of(mockUser));
 
         var response = getMyInfoService.getMyInfo("john");
 
-        assertEquals("john", response.username());
-        assertEquals(List.of(Role.LEADER, Role.MEMBER), response.roles());
+        assertEquals("john", response.username()); // 確認使用者名稱
+        assertTrue(response.globalRoles().isEmpty()); // 確認global roles是空的
+        assertEquals(1, response.userChurchRoles().size()); // 確認有一個教會
+        assertEquals(1L, response.userChurchRoles().getFirst().churchId()); // 確認教會ID是1
+        assertEquals(List.of(Role.LEADER), response.userChurchRoles().getFirst().roles()); // 確認角色是 LEADER
     }
     @Test
     void getMyInfo_user_not_exist_should_return_exception(){

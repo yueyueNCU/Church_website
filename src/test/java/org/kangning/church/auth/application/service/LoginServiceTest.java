@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.kangning.church.auth.application.port.in.login.dto.LoginRequest;
 import org.kangning.church.auth.application.port.out.JwtProviderPort;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.auth.domain.ChurchRole;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.PasswordIncorrectException;
@@ -36,7 +37,11 @@ class LoginServiceTest {
 
     @Test
     void login_success_should_return_token() {
-        User mockUser = new User("john", "encoded-password", List.of(Role.LEADER));
+        User mockUser = new User("john",
+                "encoded-password",
+                            List.of(),
+                            List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+        );
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("123456", "encoded-password")).thenReturn(true);
         when(jwtProvider.generateToken(eq("john"), any())).thenReturn("mock-token");
@@ -63,7 +68,11 @@ class LoginServiceTest {
 
     @Test
     void login_user_password_wrong_should_return_exception(){
-        User mockUser = new User("john", "encoded-password", List.of(Role.LEADER));
+        User mockUser = new User("john",
+                "encoded-password",
+                List.of(),
+                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+        );
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("123456", "encoded-password")).thenReturn(false);
         LoginRequest request = new LoginRequest("john", "123456");

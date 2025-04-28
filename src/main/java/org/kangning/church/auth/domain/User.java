@@ -13,19 +13,6 @@ import lombok.Setter;
 public class User {
     private String username;
     private String passwordHash;
-    private List<Role> roles;
-
-
-    private boolean hasRole(Role role){
-        return roles.contains(role);
-    }
-    public boolean isAdmin(){
-        return hasRole(Role.ADMIN);
-    }
-    public boolean isLeader(){
-        return hasRole(Role.LEADER);
-    }
-    public boolean isMember(){
-        return hasRole(Role.MEMBER);
-    }
+    private List<Role> globalRoles;
+    private List<ChurchRole> userChurchRoles;
 }

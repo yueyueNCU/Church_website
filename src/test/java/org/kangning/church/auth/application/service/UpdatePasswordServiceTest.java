@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kangning.church.auth.application.port.in.user.dto.UpdatePasswordRequest;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.auth.domain.ChurchRole;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.NewPasswordSameAsOldException;
@@ -43,7 +44,11 @@ class UpdatePasswordServiceTest {
     }
     @Test
     void updatePassword_old_password_wrong_should_return_exception(){
-        User mockUser = new User("john", "encoded-password", List.of(Role.LEADER));
+        User mockUser = new User("john",
+                "encoded-password",
+                List.of(),
+                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+        );
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("wrongOldPassword", "encoded-password")).thenReturn(false);
 
@@ -54,7 +59,11 @@ class UpdatePasswordServiceTest {
     }
     @Test
     void updatePassword_new_password_same_old_password_should_return_exception(){
-        User mockUser =new User("john", "encoded-password", List.of(Role.LEADER));
+        User mockUser = new User("john",
+                "encoded-password",
+                List.of(),
+                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+        );
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
 
@@ -65,7 +74,11 @@ class UpdatePasswordServiceTest {
     }
     @Test
     void updatePassword_new_password_not_same_confirm_password_should_return_exception(){
-        User mockUser =new User("john", "encoded-password", List.of(Role.LEADER));
+        User mockUser = new User("john",
+                "encoded-password",
+                List.of(),
+                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+        );
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
 
@@ -76,7 +89,11 @@ class UpdatePasswordServiceTest {
     }
     @Test
     void updatePassword_success_should_update_password(){
-        User mockUser =new User("john", "encoded-password", List.of(Role.LEADER));
+        User mockUser = new User("john",
+                "encoded-password",
+                List.of(),
+                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+        );
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
         when(passwordEncoder.encode("newPassword")).thenReturn("hashed-new-password");

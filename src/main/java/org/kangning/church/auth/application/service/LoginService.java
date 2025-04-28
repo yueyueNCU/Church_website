@@ -28,7 +28,7 @@ public class LoginService implements LoginUseCase {
             throw new PasswordIncorrectException();
         }
         String token = jwtProvider.generateToken(user.getUsername(),
-                user.getRoles().stream().map(Enum::name).toList());
+                user.getGlobalRoles().stream().map(Enum::name).toList());
 
         return new LoginResponse(token);
     }

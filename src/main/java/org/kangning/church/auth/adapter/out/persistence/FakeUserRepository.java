@@ -3,6 +3,7 @@ package org.kangning.church.auth.adapter.out.persistence;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.auth.domain.ChurchRole;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,12 +27,15 @@ public class FakeUserRepository implements UserRepositoryPort {
         users.put("john", new User(
                 "john",
                 passwordEncoder.encode("123456"), // 密碼用 encoder 加密
-                List.of(Role.LEADER, Role.MEMBER)
+                List.of(),
+                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
         ));
         users.put("admin", new User(
                 "admin",
                 passwordEncoder.encode("adminpass"),
-                List.of(Role.ADMIN)
+                List.of(Role.SITE_ADMIN),
+                List.of(new ChurchRole(1L,List.of(Role.ADMIN)),
+                        new ChurchRole(2L,List.of(Role.MEMBER)))
         ));
     }
 
