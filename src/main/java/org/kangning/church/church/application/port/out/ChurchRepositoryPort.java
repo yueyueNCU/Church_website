@@ -28,4 +28,6 @@ public interface ChurchRepositoryPort {
 
     /** 依名稱模糊搜尋（管理後台清單用；可選擇要不要加） */
     List<Church> searchByNameContaining(String keyword, int limit, int offset);
+
+    void deleteByAll();
 }

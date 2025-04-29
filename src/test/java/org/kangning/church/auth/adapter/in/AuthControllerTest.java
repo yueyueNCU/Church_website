@@ -30,15 +30,15 @@ class AuthControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserRepositoryPort userRepositoryPort;
+    private UserRepositoryPort userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void seedUser() {
-        userRepositoryPort.deleteByAll();
-        userRepositoryPort.save(new User(
+        userRepository.deleteByAll();
+        userRepository.save(new User(
                 null, "john",
                 passwordEncoder.encode("123456"),
                 Set.of(Role.LEADER)));

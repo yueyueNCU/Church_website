@@ -60,4 +60,9 @@ public class JpaChurchRepository implements ChurchRepositoryPort {
                 .map(churchMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public void deleteByAll() {
+        churchRepository.deleteAll();
+    }
 }

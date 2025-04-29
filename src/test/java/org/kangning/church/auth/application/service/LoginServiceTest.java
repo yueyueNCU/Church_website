@@ -6,8 +6,6 @@ import org.kangning.church.auth.application.port.in.login.LoginCommand;
 import org.kangning.church.auth.application.port.out.JwtProviderPort;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.common.identifier.UserId;
-import org.kangning.church.membership.domain.ChurchMemberStatus;
-import org.kangning.church.auth.domain.ChurchRole;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.exception.auth.PasswordIncorrectException;
@@ -17,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 

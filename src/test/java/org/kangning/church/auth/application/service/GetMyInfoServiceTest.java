@@ -1,12 +1,9 @@
 package org.kangning.church.auth.application.service;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.common.identifier.UserId;
-import org.kangning.church.membership.domain.ChurchMemberStatus;
-import org.kangning.church.auth.domain.ChurchRole;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.exception.auth.UserNotFoundException;
@@ -14,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
