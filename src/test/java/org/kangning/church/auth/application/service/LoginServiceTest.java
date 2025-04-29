@@ -2,14 +2,16 @@ package org.kangning.church.auth.application.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kangning.church.auth.application.port.in.login.dto.LoginRequest;
+import org.kangning.church.auth.application.port.in.login.LoginCommand;
 import org.kangning.church.auth.application.port.out.JwtProviderPort;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.common.identifier.UserId;
+import org.kangning.church.membership.domain.ChurchMemberStatus;
 import org.kangning.church.auth.domain.ChurchRole;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
-import org.kangning.church.common.PasswordIncorrectException;
-import org.kangning.church.common.UserNotFoundException;
+import org.kangning.church.common.exception.auth.PasswordIncorrectException;
+import org.kangning.church.common.exception.auth.UserNotFoundException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,49 +40,51 @@ class LoginServiceTest {
 
     @Test
     void login_success_should_return_token() {
-        User mockUser = new User("john",
+        User mockUser = new User(
+                new UserId(1L),
+                "john",
                 "encoded-password",
-                            List.of(),
-                            List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+                Set.of(Role.SITE_ADMIN)
         );
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("123456", "encoded-password")).thenReturn(true);
         when(jwtProvider.generateToken(eq("john"), any())).thenReturn("mock-token");
 
-        LoginRequest request = new LoginRequest("john", "123456");
+        LoginCommand command = new LoginCommand("john", "123456");
 
         // Act
-        var response = loginService.login(request);
+        var response = loginService.login(command);
 
         // Assert
-        assertEquals("mock-token", response.token());
+        assertEquals("mock-token", response.jwtToken());
     }
     @Test
     void login_user_not_exist_should_return_exception(){
         when(userRepository.findByUsername("notexist")).thenReturn(Optional.empty());
 
-        LoginRequest request = new LoginRequest("notexist", "123456");
+        LoginCommand command = new LoginCommand("notexist", "123456");
 
         // Act & Assert
         assertThrows(UserNotFoundException.class, () -> {
-            loginService.login(request);
+            loginService.login(command);
         });
     }
 
     @Test
     void login_user_password_wrong_should_return_exception(){
-        User mockUser = new User("john",
+        User mockUser = new User(
+                new UserId(1L),
+                "john",
                 "encoded-password",
-                List.of(),
-                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+                Set.of(Role.SITE_ADMIN)
         );
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("123456", "encoded-password")).thenReturn(false);
-        LoginRequest request = new LoginRequest("john", "123456");
+        LoginCommand command = new LoginCommand("john", "123456");
 
         // Act & Assert
         assertThrows(PasswordIncorrectException.class, () -> {
-            loginService.login(request);
+            loginService.login(command);
         });
     }
 }

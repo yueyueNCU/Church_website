@@ -1,4 +1,4 @@
-package org.kangning.church.common;
+package org.kangning.church.common.exception.auth;
 
 public class PasswordMismatchException extends RuntimeException {
     public PasswordMismatchException() {

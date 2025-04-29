@@ -3,14 +3,18 @@ package org.kangning.church.auth.adapter.in;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kangning.church.auth.application.port.in.login.dto.LoginRequest;
+import org.kangning.church.auth.adapter.in.dto.login.LoginRequest;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.auth.domain.Role;
+import org.kangning.church.auth.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,17 +30,18 @@ class AuthControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserRepositoryPort userRepositoryPort; // ✅ 注入你的 User Repository
+    private UserRepositoryPort userRepositoryPort;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // ✅ 注入 PasswordEncoder
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
-    void resetUserPassword() {
-        userRepositoryPort.findByUsername("john").ifPresent(user -> {
-            user.setPasswordHash(passwordEncoder.encode("123456"));
-            userRepositoryPort.save(user);
-        });
+    void seedUser() {
+        userRepositoryPort.deleteByAll();
+        userRepositoryPort.save(new User(
+                null, "john",
+                passwordEncoder.encode("123456"),
+                Set.of(Role.LEADER)));
     }
 
     @Test

@@ -1,4 +1,4 @@
-package org.kangning.church.common;
+package org.kangning.church.common.exception.auth;
 
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException() {

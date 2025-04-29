@@ -1,4 +1,4 @@
-package org.kangning.church.auth.application.port.in.login.dto;
+package org.kangning.church.auth.adapter.in.dto.login;
 
 import jakarta.validation.constraints.NotBlank;
 

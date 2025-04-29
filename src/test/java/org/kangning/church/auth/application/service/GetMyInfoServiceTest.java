@@ -1,19 +1,22 @@
 package org.kangning.church.auth.application.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kangning.church.auth.application.port.in.user.GetMyInfoUseCase;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.common.identifier.UserId;
+import org.kangning.church.membership.domain.ChurchMemberStatus;
 import org.kangning.church.auth.domain.ChurchRole;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
-import org.kangning.church.common.UserNotFoundException;
+import org.kangning.church.common.exception.auth.UserNotFoundException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -29,21 +32,22 @@ class GetMyInfoServiceTest {
 
     @Test
     void getMyInfo_success_should_return_user_info() {
-        User mockUser = new User("john",
+        User mockUser = new User(
+                new UserId(1L),
+                "john",
                 "encoded-password",
-                List.of(),
-                List.of(new ChurchRole(1L, List.of(Role.LEADER)))
+                Set.of(Role.SITE_ADMIN)
         );
         when(userRepositoryPort.findByUsername("john"))
                 .thenReturn(Optional.of(mockUser));
 
+        // Act
         var response = getMyInfoService.getMyInfo("john");
 
-        assertEquals("john", response.username()); // 確認使用者名稱
-        assertTrue(response.globalRoles().isEmpty()); // 確認global roles是空的
-        assertEquals(1, response.userChurchRoles().size()); // 確認有一個教會
-        assertEquals(1L, response.userChurchRoles().getFirst().churchId()); // 確認教會ID是1
-        assertEquals(List.of(Role.LEADER), response.userChurchRoles().getFirst().roles()); // 確認角色是 LEADER
+        // Assert
+        assertEquals(mockUser.getId(), response.id());
+        assertEquals(mockUser.getUsername(), response.username());
+        assertEquals(mockUser.getGlobalRoles(), response.globalRoles());
     }
     @Test
     void getMyInfo_user_not_exist_should_return_exception(){

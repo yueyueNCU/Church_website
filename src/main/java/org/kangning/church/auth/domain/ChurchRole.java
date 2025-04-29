@@ -2,8 +2,8 @@ package org.kangning.church.auth.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.kangning.church.membership.domain.ChurchMemberStatus;
 
 import java.util.List;
 
@@ -13,4 +13,5 @@ import java.util.List;
 public class ChurchRole {
     private Long ChurchId;
     private List<Role> roles;
+    private ChurchMemberStatus status;
 }

@@ -1,4 +1,4 @@
-package org.kangning.church.common;
+package org.kangning.church.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.web.error.ErrorAttributeOptions;

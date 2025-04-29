@@ -1,8 +1,8 @@
 package org.kangning.church.auth.application.port.in.login;
 
-import org.kangning.church.auth.application.port.in.login.dto.LoginRequest;
-import org.kangning.church.auth.application.port.in.login.dto.LoginResponse;
+import org.kangning.church.auth.adapter.in.dto.login.LoginRequest;
+import org.kangning.church.auth.adapter.in.dto.login.LoginResponse;
 
 public interface LoginUseCase {
-    LoginResponse login(LoginRequest request);
+    LoginResult login(LoginCommand command);
 }
