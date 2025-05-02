@@ -2,16 +2,25 @@ package org.kangning.church.church.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
+import org.kangning.church.auth.domain.Role;
 import org.kangning.church.church.application.port.in.ChurchResult;
 import org.kangning.church.church.application.port.in.CreateChurchCommand;
+import org.kangning.church.common.exception.membership.MembershipAlreadyExistsException;
 import org.kangning.church.common.identifier.ChurchId;
 import org.kangning.church.church.application.port.in.ChurchUseCase;
 import org.kangning.church.church.application.port.out.ChurchRepositoryPort;
 import org.kangning.church.church.domain.Church;
 import org.kangning.church.common.exception.church.ChurchNameDuplicateException;
+import org.kangning.church.common.identifier.UserId;
+import org.kangning.church.membership.application.port.out.MembershipRepositoryPort;
+import org.kangning.church.membership.domain.ChurchMemberStatus;
+import org.kangning.church.membership.domain.Membership;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -20,9 +29,9 @@ public class ChurchService implements ChurchUseCase {
 
     private final ChurchRepositoryPort churchRepository;
 
-    private final UserRepositoryPort userRepository;
+    private final MembershipRepositoryPort membershipRepository;
     @Override
-    public ChurchId createChurch(String username, CreateChurchCommand command) {
+    public Church createChurch(UserId id, CreateChurchCommand command) {
         if(churchRepository.existsByName(command.name())) {
             throw new ChurchNameDuplicateException();
         }
@@ -35,22 +44,39 @@ public class ChurchService implements ChurchUseCase {
                 null
             )
         );
-//        UserId userId = userRepository.findByUsername(username)
-//                .orElseThrow(UserNotFoundException::new)
-//                .getId();
-        //add Leader membership to the username
-        return new ChurchId(church.getId().value());
+        Membership membership= new Membership(
+                null,
+                church.getId(),
+                id,
+                Set.of(Role.LEADER),
+                ChurchMemberStatus.APPROVED
+        );
+        membershipRepository.save(membership);
+        return church;
     }
 
     @Override
-    public List<ChurchResult> getMyChurches(String username) {
-        //search membershipRepo
-        return List.of();
-    }
+    public List<ChurchResult> getMyChurches(UserId userId) {
+        List<Membership> memberships = membershipRepository.findApprovedByUserId(userId);
 
-    @Override
-    public void joinChurch(String username, ChurchId churchId) {
-        //use membershipRepo
+        // 2. 取出所有 ChurchId
+        List<ChurchId> churchIds = memberships.stream()
+                .map(Membership::getChurchId)
+                .toList();
+
+        // 3. 查詢這些教會資訊
+        List<Church> churches = churchRepository.findAllByIds(churchIds);
+
+        // 4. 組合成 DTO 回傳
+        return churches.stream()
+                .map(ch -> new ChurchResult(
+                        ch.getId(),
+                        ch.getName(),
+                        ch.getAddress(),
+                        ch.getDescription(),
+                        ch.getCreatedAt()
+                ))
+                .toList();
     }
 
     @Override
@@ -67,4 +93,5 @@ public class ChurchService implements ChurchUseCase {
                         )
         ).toList();
     }
+
 }

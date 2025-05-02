@@ -33,9 +33,10 @@ public class JpaUserRepository implements UserRepositoryPort {
     }
 
     @Override
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
+    public Optional<User> findByAccount(String account) {
+        return userRepository.findByAccount(account).map(userMapper::toDomain);
     }
+
     @Override
     public void deleteByAll() {
         userRepository.deleteAll();

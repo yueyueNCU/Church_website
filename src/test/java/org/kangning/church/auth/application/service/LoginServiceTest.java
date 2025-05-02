@@ -40,14 +40,16 @@ class LoginServiceTest {
         User mockUser = new User(
                 new UserId(1L),
                 "john",
+                "TestAccount",
                 "encoded-password",
-                Set.of(Role.SITE_ADMIN)
+                Set.of(Role.LEADER)
         );
-        when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
-        when(passwordEncoder.matches("123456", "encoded-password")).thenReturn(true);
-        when(jwtProvider.generateToken(eq("john"), any())).thenReturn("mock-token");
 
-        LoginCommand command = new LoginCommand("john", "123456");
+        when(userRepository.findByAccount("TestAccount")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches("12345678", "encoded-password")).thenReturn(true);
+        when(jwtProvider.generateToken(eq(new UserId(1L)), any(),any())).thenReturn("mock-token");
+
+        LoginCommand command = new LoginCommand("TestAccount", "12345678");
 
         // Act
         var response = loginService.login(command);
@@ -57,9 +59,9 @@ class LoginServiceTest {
     }
     @Test
     void login_user_not_exist_should_return_exception(){
-        when(userRepository.findByUsername("notexist")).thenReturn(Optional.empty());
+        when(userRepository.findByAccount("not exist")).thenReturn(Optional.empty());
 
-        LoginCommand command = new LoginCommand("notexist", "123456");
+        LoginCommand command = new LoginCommand("not exist", "12345678");
 
         // Act & Assert
         assertThrows(UserNotFoundException.class, () -> {
@@ -72,12 +74,13 @@ class LoginServiceTest {
         User mockUser = new User(
                 new UserId(1L),
                 "john",
+                "TestAccount",
                 "encoded-password",
-                Set.of(Role.SITE_ADMIN)
+                Set.of(Role.LEADER)
         );
-        when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
-        when(passwordEncoder.matches("123456", "encoded-password")).thenReturn(false);
-        LoginCommand command = new LoginCommand("john", "123456");
+        when(userRepository.findByAccount("TestAccount")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches("wrong-password", "encoded-password")).thenReturn(false);
+        LoginCommand command = new LoginCommand("TestAccount", "wrong-password");
 
         // Act & Assert
         assertThrows(PasswordIncorrectException.class, () -> {

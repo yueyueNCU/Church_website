@@ -21,17 +21,14 @@ public class LoginService implements LoginUseCase {
 
     @Override
     public LoginResult login(LoginCommand command) {
-        User user= userRepository.findByUsername(command.username())
+        User user= userRepository.findByAccount(command.account())
                 .orElseThrow(UserNotFoundException::new);
-        System.out.println("使用者輸入的密碼：" + command.rawPassword());
-        System.out.println("使用者密碼has：" + passwordEncoder.encode(command.rawPassword()));
-        System.out.println("資料庫密碼Hash：" + user.getPasswordHash());
-        System.out.println("密碼比對結果：" + passwordEncoder.matches(command.rawPassword(), user.getPasswordHash()));
+
         if(!passwordEncoder.matches(command.rawPassword(), user.getPasswordHash())){
             throw new PasswordIncorrectException();
         }
-        String token = jwtProvider.generateToken(user.getUsername(),
-                user.getGlobalRoles().stream().map(Enum::name).toList());
+        String token = jwtProvider.generateToken(user.getId(),user.getUsername(),
+                user.getGlobalRoles());
 
         return new LoginResult(token);
     }

@@ -7,6 +7,7 @@ import org.kangning.church.auth.adapter.in.dto.password.UpdatePasswordRequest;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
+import org.kangning.church.common.identifier.UserId;
 import org.kangning.church.testutil.TestJwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,18 +34,23 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserRepositoryPort userRepositoryPort;
+    private UserRepositoryPort userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private UserId userId;
+
     @BeforeEach
     void seedUser() {
-        userRepositoryPort.deleteByAll();
-        userRepositoryPort.save(new User(
-                null, "john",
-                passwordEncoder.encode("123456"),
+        userRepository.deleteByAll();
+        User user=userRepository.save(new User(
+                null,
+                "john",
+                "TestAccount",
+                passwordEncoder.encode("12345678"),
                 Set.of(Role.LEADER)));
+        userId=user.getId();
     }
 
 
@@ -57,8 +63,9 @@ class UserControllerTest {
     @Test
     void getMyInfo_with_token_should_return_user_info() throws Exception {
         String token = TestJwtProvider.generateToken(
+                userId,
                 "john",
-                List.of("LEADER")
+                Set.of(Role.LEADER)
         );
 
         mockMvc.perform(get("/api/user/me")
@@ -80,11 +87,13 @@ class UserControllerTest {
     @Test
     void updatePassword_with_token_should_return_成功更新密碼() throws Exception {
         String token = TestJwtProvider.generateToken(
-                "john", List.of("LEADER")
+                userId,
+                "john",
+                Set.of(Role.LEADER)
         );
 
         var request = new UpdatePasswordRequest(
-                "123456",
+                "12345678",
                 "newPassword123",
                 "newPassword123"
         );
@@ -93,6 +102,6 @@ class UserControllerTest {
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 }

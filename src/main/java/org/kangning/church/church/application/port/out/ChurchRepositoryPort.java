@@ -2,6 +2,8 @@ package org.kangning.church.church.application.port.out;
 
 import org.kangning.church.church.domain.Church;
 import org.kangning.church.common.identifier.ChurchId;
+import org.kangning.church.common.identifier.UserId;
+import org.kangning.church.membership.domain.Membership;
 
 import java.util.List;
 import java.util.Optional;

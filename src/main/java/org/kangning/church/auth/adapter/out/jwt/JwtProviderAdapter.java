@@ -1,18 +1,22 @@
 package org.kangning.church.auth.adapter.out.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.kangning.church.auth.application.port.out.JwtProviderPort;
 import org.kangning.church.auth.domain.Role;
+import org.kangning.church.common.exception.auth.jwt.InvalidTokenException;
+import org.kangning.church.common.identifier.UserId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtProviderAdapter implements JwtProviderPort {
@@ -32,37 +36,48 @@ public class JwtProviderAdapter implements JwtProviderPort {
     }
 
     @Override
-    public String generateToken(String username, List<String> roles) {
+    public String generateToken(UserId userId, String username, Set<Role> roles) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-                .setSubject(username)
-                .claim("roles", roles)
+                .setSubject(userId.toString())
+                .claim("username", username)
+                .claim("roles",roles.stream().map(Enum::name).toList())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+
     @Override
-    public String extractUsername(String token) {
-        return getClaims(token).getSubject();
+    public UserId extractUserId(String token) {
+        return new UserId(Long.parseLong(getClaims(token).getSubject()));
     }
 
     @Override
-    public List<Role> extractRoles(String token) {
-        List<String> rolesAsString = getClaims(token).get("roles", List.class);
-        return rolesAsString.stream()
-                .map(Role::valueOf) // Convert String → Enum
-                .toList();
+    public String extractUsername(String token) {
+        return getClaims(token).get("username", String.class);
+    }
+
+    @Override
+    public Set<Role> extractRoles(String token) {
+        List<String> roleNames = getClaims(token).get("roles", List.class); // ✅ List
+        return roleNames.stream()
+                .map(Role::valueOf)
+                .collect(java.util.stream.Collectors.toSet()); // ✅ 轉成 Set<Role>
     }
 
     private Claims getClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(signingKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(signingKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new InvalidTokenException();
+        }
     }
 }

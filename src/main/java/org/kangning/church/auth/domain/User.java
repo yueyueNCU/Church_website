@@ -15,7 +15,8 @@ import org.kangning.church.common.identifier.UserId;
 @EqualsAndHashCode(of = "username")
 public class User {
     private final UserId id;              // 允許 null，儲存時由 JPA 產生
-    private final String username;
+    private  String username;
+    private final String account;
     private String passwordHash;
-    private final Set<Role> globalRoles;
+    private Set<Role> globalRoles;
 }

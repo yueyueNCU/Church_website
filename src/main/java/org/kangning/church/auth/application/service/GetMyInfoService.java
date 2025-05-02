@@ -7,6 +7,7 @@ import org.kangning.church.auth.application.port.in.user.UserInfoResult;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.exception.auth.UserNotFoundException;
+import org.kangning.church.common.identifier.UserId;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,8 +17,8 @@ public class GetMyInfoService implements GetMyInfoUseCase {
     private final UserRepositoryPort userRepository;
 
     @Override
-    public UserInfoResult getMyInfo(String username) {
-        User user = userRepository.findByUsername(username)
+    public UserInfoResult getMyInfo(UserId userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         return new UserInfoResult(

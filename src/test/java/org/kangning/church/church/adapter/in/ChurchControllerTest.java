@@ -3,12 +3,20 @@ package org.kangning.church.church.adapter.in;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.kangning.church.auth.adapter.out.persistence.entity.UserEntity;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.church.adapter.in.dto.CreateChurchRequest;
+import org.kangning.church.church.adapter.out.persistent.entity.ChurchEntity;
 import org.kangning.church.church.application.port.out.ChurchRepositoryPort;
 import org.kangning.church.church.domain.Church;
+import org.kangning.church.common.identifier.ChurchId;
+import org.kangning.church.common.identifier.UserId;
+import org.kangning.church.membership.application.port.out.MembershipRepositoryPort;
+import org.kangning.church.membership.application.service.MembershipService;
+import org.kangning.church.membership.domain.ChurchMemberStatus;
+import org.kangning.church.membership.domain.Membership;
 import org.kangning.church.testutil.TestJwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,7 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,76 +50,77 @@ class ChurchControllerTest {
     @Autowired
     private UserRepositoryPort userRepository;
 
+    private String jwtToken;
+    @Autowired
+    private MembershipRepositoryPort membershipRepository;
+
+    private ChurchId churchId;
+    private UserId userId;
     @BeforeEach
-    void setUp(){
+    void setup() {
+        // 清空資料
         churchRepository.deleteByAll();
         userRepository.deleteByAll();
+
+        // 建立測試 user
+        User savedUser = userRepository.save(new User(
+                null,
+                "john",
+                "TestAccount",
+                passwordEncoder.encode("12345678"),
+                Set.of(Role.LEADER))
+        );
+        userId=savedUser.getId();
+        Church savedChurch = churchRepository.save(new Church(
+                null,
+                "測試教會",
+                "台北市123",
+                "建立於2005年",
+                null)
+        );
+        churchId = savedChurch.getId();
+
+        jwtToken = TestJwtProvider.generateToken(
+                savedUser.getId(),
+                savedUser.getUsername(),
+                Set.of(Role.LEADER)
+        );
+
+        membershipRepository.save(new Membership(
+                null,
+                churchId,
+                userId,
+                Set.of(Role.LEADER),
+                ChurchMemberStatus.APPROVED)
+        );
+
+
     }
     @Test
     void createChurch_withValidTokenAndProperRole_shouldReturn201() throws Exception {
-        // 1. 先建一個使用者
-        User savedUser = userRepository.save(new User(
-                null,
-                "testuser",
-                passwordEncoder.encode("password123"),
-                Set.of(Role.SITE_ADMIN)       // 注意權限，需要能通過Controller的 @PreAuthorize
-        ));
-        // 2. 產生一個 token
-        String token = TestJwtProvider.generateToken(
-                savedUser.getUsername(),
-                List.of("ROLE_SITE_ADMIN")      // 必須帶ROLE_
-        );
-        // 3. 建立 request body
+
         CreateChurchRequest request=new CreateChurchRequest("康寧街教會","康寧街141巷5號","建立於19xx年");
 
-        // 4. 呼叫 MockMvc，帶上 Authorization header
         mockMvc.perform(post("/api/church")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());   // 根據 REST 風格，create通常是 201 Created
     }
 
     @Test
-    void join_withValidTokenAndProperRole_shouldReturn202() throws Exception{
-        // 1. 先準備一個 User，插進資料庫
-        User savedUser = userRepository.save(new User(
-                null,
-                "testuser",
-                passwordEncoder.encode("password123"),
-                Set.of(Role.MEMBER)      // 可放空或 MEMBER
-        ));
-
-        // 2. 再準備一個 Church，插進資料庫
-        Church savedChurch = churchRepository.save(
-                new Church(
-                        null,
-                        "康寧街教會",
-                        "康寧街141巷5號",
-                        "建立於19xx年",
-                        null
-                )
-        );
-
-        // 3. 生成一個合法的 JWT Token
-        String token = TestJwtProvider.generateToken(
-                savedUser.getUsername(),
-                List.of("ROLE_MEMBER")   // 注意要加 "ROLE_"
-        );
-
-        // 4. 呼叫 /api/church/{id}/join
-        mockMvc.perform(post("/api/church/" + savedChurch.getId().value() + "/join")
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(status().isAccepted());      // joinChurch() 是 202 Accepted
-
+    void getMyChurches_shouldReturn200() throws Exception {
+        mockMvc.perform(get("/api/church/me")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isOk());
     }
 
     @Test
-    void myChurches() {
+    void searchChurch_shouldReturnList() throws Exception {
 
-    }
-
-    @Test
-    void search() {
+        mockMvc.perform(get("/api/church/search")
+                        .param("keyword", "測")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isOk());
     }
 }

@@ -4,8 +4,10 @@ import jakarta.persistence.*;
         import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.kangning.church.auth.domain.Role;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,19 +18,22 @@ import java.util.Set;
 @NoArgsConstructor
 public class UserEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 20)
     private String username;
+
+    @Column(nullable = false, unique = true, length = 30)
+    private String account;
 
     @Column(nullable = false, length = 200)
     private String passwordHash;
 
-    /** 全站權限，例如 SITE_ADMIN */
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_global_roles",
-            joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "user_global_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
-    private Set<String> globalRoles = new java.util.HashSet<>();
+    @Enumerated(EnumType.STRING)
+    private Set<Role> globalRoles = new HashSet<>();
 }

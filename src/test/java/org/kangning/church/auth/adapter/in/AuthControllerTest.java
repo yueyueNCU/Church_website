@@ -39,15 +39,18 @@ class AuthControllerTest {
     void seedUser() {
         userRepository.deleteByAll();
         userRepository.save(new User(
-                null, "john",
-                passwordEncoder.encode("123456"),
-                Set.of(Role.LEADER)));
+                null,
+                "john",
+                "TestAccount",
+                passwordEncoder.encode("12345678"),
+                Set.of(Role.LEADER))
+        );
     }
 
     @Test
     void login_成功回傳JWTToken() throws Exception {
         // Arrange
-        LoginRequest loginRequest = new LoginRequest("john", "123456");
+        LoginRequest loginRequest = new LoginRequest("TestAccount", "12345678");
 
         // Act & Assert
         mockMvc.perform(post("/api/auth/login")

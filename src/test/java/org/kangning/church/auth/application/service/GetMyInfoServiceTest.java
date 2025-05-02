@@ -31,14 +31,15 @@ class GetMyInfoServiceTest {
         User mockUser = new User(
                 new UserId(1L),
                 "john",
+                "TestAccount",
                 "encoded-password",
-                Set.of(Role.SITE_ADMIN)
+                Set.of(Role.LEADER)
         );
-        when(userRepositoryPort.findByUsername("john"))
+        when(userRepositoryPort.findById(new UserId(1L)))
                 .thenReturn(Optional.of(mockUser));
 
         // Act
-        var response = getMyInfoService.getMyInfo("john");
+        var response = getMyInfoService.getMyInfo(new UserId(1L));
 
         // Assert
         assertEquals(mockUser.getId(), response.id());
@@ -47,10 +48,10 @@ class GetMyInfoServiceTest {
     }
     @Test
     void getMyInfo_user_not_exist_should_return_exception(){
-        when(userRepositoryPort.findByUsername("notexist")).thenReturn(Optional.empty());
+        when(userRepositoryPort.findById(new UserId(0L))).thenReturn(Optional.empty());
 
         RuntimeException thrown = assertThrows(UserNotFoundException.class, () -> {
-            getMyInfoService.getMyInfo("notexist");
+            getMyInfoService.getMyInfo(new UserId(0L));
         });
     }
 }

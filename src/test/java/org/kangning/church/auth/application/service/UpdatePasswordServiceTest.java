@@ -35,11 +35,11 @@ class UpdatePasswordServiceTest {
 
     @Test
     void updatePassword_user_not_exist_should_return_exception(){
-        when(userRepository.findByUsername("not exist")).thenReturn(Optional.empty());
+        when(userRepository.findById(new UserId(0L))).thenReturn(Optional.empty());
 
         UpdatePasswordCommand updatePasswordCommand=new UpdatePasswordCommand("oldPassword", "newPassword", "confirmPassword");
         assertThrows(UserNotFoundException.class, () -> {
-            updatePasswordService.updatePassword("not exist", updatePasswordCommand);
+            updatePasswordService.updatePassword(new UserId(0L), updatePasswordCommand);
         });
     }
     @Test
@@ -47,15 +47,16 @@ class UpdatePasswordServiceTest {
         User mockUser = new User(
                 new UserId(1L),
                 "john",
+                "TestAccount",
                 "encoded-password",
-                Set.of(Role.SITE_ADMIN)
+                Set.of(Role.LEADER)
         );
-        when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
+        when(userRepository.findById(new UserId(1L))).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("wrongOldPassword", "encoded-password")).thenReturn(false);
 
         UpdatePasswordCommand updatePasswordCommand=new UpdatePasswordCommand("wrongOldPassword", "newPassword", "confirmPassword");
         assertThrows(OldPasswordIncorrectException.class, () -> {
-            updatePasswordService.updatePassword("john", updatePasswordCommand);
+            updatePasswordService.updatePassword(new UserId(1L), updatePasswordCommand);
         });
     }
     @Test
@@ -63,15 +64,16 @@ class UpdatePasswordServiceTest {
         User mockUser = new User(
                 new UserId(1L),
                 "john",
+                "TestAccount",
                 "encoded-password",
-                Set.of(Role.SITE_ADMIN)
+                Set.of(Role.LEADER)
         );
-        when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
+        when(userRepository.findById(new UserId(1L))).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
 
         UpdatePasswordCommand updatePasswordCommand=new UpdatePasswordCommand("oldPassword", "oldPassword", "confirmPassword");
         assertThrows(NewPasswordSameAsOldException.class, () -> {
-            updatePasswordService.updatePassword("john", updatePasswordCommand);
+            updatePasswordService.updatePassword(new UserId(1L), updatePasswordCommand);
         });
     }
     @Test
@@ -79,15 +81,16 @@ class UpdatePasswordServiceTest {
         User mockUser = new User(
                 new UserId(1L),
                 "john",
+                "TestAccount",
                 "encoded-password",
-                Set.of(Role.SITE_ADMIN)
+                Set.of(Role.LEADER)
         );
-        when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
+        when(userRepository.findById(new UserId(1L))).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
 
         UpdatePasswordCommand updatePasswordCommand=new UpdatePasswordCommand("oldPassword", "newPassword", "differentConfirmPassword");
         assertThrows(PasswordMismatchException.class, () -> {
-            updatePasswordService.updatePassword("john", updatePasswordCommand);
+            updatePasswordService.updatePassword(new UserId(1L), updatePasswordCommand);
         });
     }
     @Test
@@ -95,16 +98,17 @@ class UpdatePasswordServiceTest {
         User mockUser = new User(
                 new UserId(1L),
                 "john",
+                "TestAccount",
                 "encoded-password",
-                Set.of(Role.SITE_ADMIN)
+                Set.of(Role.LEADER)
         );
-        when(userRepository.findByUsername("john")).thenReturn(Optional.of(mockUser));
+        when(userRepository.findById(new UserId(1L))).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
         when(passwordEncoder.encode("newPassword")).thenReturn("hashed-new-password");
 
 
         UpdatePasswordCommand updatePasswordCommand=new UpdatePasswordCommand("oldPassword", "newPassword", "newPassword");
-        updatePasswordService.updatePassword("john", updatePasswordCommand);
+        updatePasswordService.updatePassword(  new UserId(1L), updatePasswordCommand);
 
         assertEquals("hashed-new-password", mockUser.getPasswordHash()); // 確認 user 的密碼被更新了
     }

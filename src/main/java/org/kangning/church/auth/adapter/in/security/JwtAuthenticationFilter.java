@@ -10,6 +10,10 @@ import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.exception.auth.UserNotFoundException;
+import org.kangning.church.common.identifier.ChurchId;
+import org.kangning.church.common.identifier.UserId;
+import org.kangning.church.membership.application.port.out.MembershipRepositoryPort;
+import org.kangning.church.membership.domain.Membership;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +24,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -32,8 +39,9 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProviderPort jwtProvider;
-
     private final UserRepositoryPort userRepository;
+    private final MembershipRepositoryPort membershipRepository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -47,37 +55,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String username = jwtProvider.extractUsername(token);
-
-        User user = userRepository.findByUsername(username)
+        UserId userId = jwtProvider.extractUserId(token);
+        User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         String churchIdHeader = request.getHeader("X-Church-Id");
         Long churchId = (churchIdHeader != null) ? Long.parseLong(churchIdHeader) : null;
 
+        // ✨ 驗證 churchId from path 與 header 是否一致
+        Long churchIdFromPath = extractChurchIdFromPath(request.getRequestURI());
+        if (churchId != null && churchIdFromPath != null && !churchId.equals(churchIdFromPath)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("X-Church-Id does not match path churchId.");
+            return;
+        }
 
         List<String> authorities = new ArrayList<>();
 
-        // 加入 Global Roles
+        // Global roles
         if (user.getGlobalRoles() != null) {
             authorities.addAll(user.getGlobalRoles().stream()
                     .map(role -> "ROLE_" + role.name())
                     .toList());
         }
 
-        // 加入教會的Roles
-//        if (churchId != null) {
-//            authorities.addAll(
-//                    user.getMemberships().stream()
-//                            .filter(m -> m.isApproved() && m.getChurchId().equals(churchId))
-//                            .flatMap(m -> m.getRoles().stream())
-//                            .map(r -> "ROLE_" + r.name())
-//                            .toList()
-//            );
-//        }
+        // Church roles
+        Optional<Membership> membership = membershipRepository.findByChurchIdAndUserId(new ChurchId(churchId),userId);
+
+        if (churchId != null && membership.isPresent()) {
+
+            authorities.addAll(membership.get().getRoles().stream()
+                    .map(role -> "ROLE_" + role.name())
+                    .toList());
+        }
+
+        UserPrincipal principal = new UserPrincipal(user.getId(), user.getUsername());
 
         var auth = new UsernamePasswordAuthenticationToken(
-                username,
+                principal,
                 null,
                 authorities.stream().map(SimpleGrantedAuthority::new).toList()
         );
@@ -86,5 +101,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
+    }
+
+    private Long extractChurchIdFromPath(String uri) {
+        String[] parts = uri.split("/");
+        for (int i = 0; i < parts.length - 1; i++) {
+            if (parts[i].equals("church")) {
+                try {
+                    return Long.parseLong(parts[i + 1]);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 }

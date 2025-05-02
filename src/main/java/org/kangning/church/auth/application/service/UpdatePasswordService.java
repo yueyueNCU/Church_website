@@ -8,6 +8,7 @@ import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.exception.auth.NewPasswordSameAsOldException;
 import org.kangning.church.common.exception.auth.OldPasswordIncorrectException;
 import org.kangning.church.common.exception.auth.PasswordMismatchException;
+import org.kangning.church.common.identifier.UserId;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.kangning.church.common.exception.auth.UserNotFoundException;
@@ -20,8 +21,8 @@ public class UpdatePasswordService implements UpdatePasswordUseCase {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void updatePassword(String username, UpdatePasswordCommand command) {
-        User user= userRepository.findByUsername(username)
+    public void updatePassword(UserId userId, UpdatePasswordCommand command) {
+        User user= userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         if (!passwordEncoder.matches(command.oldPassword(), user.getPasswordHash())) {

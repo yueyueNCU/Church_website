@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
     private final LoginUseCase loginUseCase;
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest dto){
 
-        LoginCommand command = new LoginCommand(dto.username(), dto.password());
+        LoginCommand command = new LoginCommand(dto.account(), dto.password());
 
         LoginResult result = loginUseCase.login(command);
 
