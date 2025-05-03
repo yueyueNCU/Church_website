@@ -1,5 +1,6 @@
 package org.kangning.church.church.application.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class ChurchService implements ChurchUseCase {
 

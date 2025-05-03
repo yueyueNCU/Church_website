@@ -1,4 +1,4 @@
-package org.kangning.church.auth.application.port.in.user;
+package org.kangning.church.auth.application.port.in.user.password;
 
 public record UpdatePasswordCommand(
         String oldPassword,

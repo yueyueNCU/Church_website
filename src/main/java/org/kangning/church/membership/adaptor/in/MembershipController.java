@@ -44,7 +44,7 @@ public class MembershipController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<MembersResponse> getMyMembership(
+    public ResponseEntity<MembersResponse> getMyChurchMembership(
             @PathVariable ChurchId churchId,
             Authentication authentication
     ){
@@ -99,22 +99,19 @@ public class MembershipController {
                 request.roles()
         );
 
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.ok().build();
     }
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_SITE_ADMIN')")
-    public ResponseEntity<MembersResponse> getMembership(
+    public ResponseEntity<MembersResponse> getIndividualMembership(
             @PathVariable ChurchId churchId,
             @PathVariable UserId userId
     ) {
         MemberResult result = membershipUseCase.getMyMembership(churchId, userId);
 
-        return ResponseEntity.ok(new MembersResponse(
-                result.userId(),
-                result.username(),
-                result.roles(),
-                result.status()
-        ));
+        var response = new MembersResponse(result.userId(),result.username(),result.roles(),result.status());
+
+        return ResponseEntity.ok(response);
     }
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_SITE_ADMIN')")
@@ -124,6 +121,6 @@ public class MembershipController {
     ) {
         membershipUseCase.removeMembership(churchId, userId);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

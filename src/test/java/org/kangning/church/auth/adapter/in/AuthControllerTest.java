@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kangning.church.auth.adapter.in.dto.login.LoginRequest;
+import org.kangning.church.auth.adapter.in.dto.register.RegisterRequest;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
@@ -58,5 +59,35 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists()); // 預期回傳一個 token
+    }
+
+    @Test
+    void register_userAlreadyExist_should_return_conflict() throws Exception{
+
+        RegisterRequest request = new RegisterRequest(
+                "john",
+                "TestAccount",
+                "12345678",
+                "12345678"
+        );
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void register_success_should_return_created() throws Exception{
+
+        RegisterRequest request = new RegisterRequest(
+                "jacob",
+                "NewTestAccount",
+                "12345678",
+                "12345678"
+        );
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
     }
 }

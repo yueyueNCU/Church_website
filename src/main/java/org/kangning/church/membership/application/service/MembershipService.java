@@ -1,11 +1,13 @@
 package org.kangning.church.membership.application.service;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.exception.membership.ChurchApplicantNotExistException;
 import org.kangning.church.common.exception.membership.MembershipAlreadyExistsException;
+import org.kangning.church.common.exception.membership.MembershipNotFoundException;
 import org.kangning.church.common.identifier.ChurchId;
 import org.kangning.church.common.identifier.UserId;
 import org.kangning.church.membership.application.port.in.MemberResult;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
+@Transactional
 @AllArgsConstructor
 public class MembershipService implements MembershipUseCase {
 
@@ -104,7 +107,7 @@ public class MembershipService implements MembershipUseCase {
     public MemberResult getMyMembership(ChurchId churchId, UserId userId) {
         Membership membership = membershipRepository
                 .findByChurchIdAndUserId(churchId, userId)
-                .orElseThrow(ChurchApplicantNotExistException::new);
+                .orElseThrow(MembershipNotFoundException::new);
 
         String username = userRepository.findById(membership.getUserId())
                 .map(User::getUsername)

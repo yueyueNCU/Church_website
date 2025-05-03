@@ -97,7 +97,7 @@ class ChurchControllerTest {
 
     }
     @Test
-    void createChurch_withValidTokenAndProperRole_shouldReturn201() throws Exception {
+    void createChurch_withValidTokenAndRequest_shouldReturnCreated() throws Exception {
 
         CreateChurchRequest request=new CreateChurchRequest("康寧街教會","康寧街141巷5號","建立於19xx年");
 
@@ -105,18 +105,29 @@ class ChurchControllerTest {
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());   // 根據 REST 風格，create通常是 201 Created
+                .andExpect(status().isCreated());
+    }
+    @Test
+    void createChurch_withValidTokenButInvalidRequest_shouldReturnConflict() throws Exception {
+
+        CreateChurchRequest request=new CreateChurchRequest("測試教會","康寧街141","建立於20xx年");
+
+        mockMvc.perform(post("/api/church")
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
     }
 
     @Test
-    void getMyChurches_shouldReturn200() throws Exception {
+    void getMyChurches_withValidToken_shouldReturnOk() throws Exception {
         mockMvc.perform(get("/api/church/me")
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void searchChurch_shouldReturnList() throws Exception {
+    void searchChurch_withValidToken_shouldReturnOk() throws Exception {
 
         mockMvc.perform(get("/api/church/search")
                         .param("keyword", "測")

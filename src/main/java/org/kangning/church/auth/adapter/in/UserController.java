@@ -1,14 +1,15 @@
 package org.kangning.church.auth.adapter.in;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.kangning.church.auth.adapter.in.security.UserPrincipal;
-import org.kangning.church.auth.application.port.in.user.GetMyInfoUseCase;
-import org.kangning.church.auth.application.port.in.user.UpdatePasswordCommand;
-import org.kangning.church.auth.application.port.in.user.UpdatePasswordUseCase;
+import org.kangning.church.auth.application.port.in.user.password.GetMyInfoUseCase;
+import org.kangning.church.auth.application.port.in.user.password.UpdatePasswordCommand;
+import org.kangning.church.auth.application.port.in.user.password.UpdatePasswordUseCase;
 import org.kangning.church.auth.adapter.in.dto.password.UpdatePasswordRequest;
 import org.kangning.church.auth.adapter.in.dto.password.UserInfoResponse;
-import org.kangning.church.auth.application.port.in.user.UserInfoResult;
+import org.kangning.church.auth.application.port.in.user.password.UserInfoResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
+@Transactional
 public class UserController {
 
     private final GetMyInfoUseCase getMyInfoUseCase;
 
     private final UpdatePasswordUseCase updatePasswordUseCase;
-
     @GetMapping("/me")
     public ResponseEntity<UserInfoResponse> getMyInfo(Authentication authentication){
         UserPrincipal principal =(UserPrincipal) authentication.getPrincipal();
@@ -47,7 +48,7 @@ public class UserController {
 
         updatePasswordUseCase.updatePassword(principal.id(), command);
 
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.ok().build(); // 204 No Content
     }
 
 }

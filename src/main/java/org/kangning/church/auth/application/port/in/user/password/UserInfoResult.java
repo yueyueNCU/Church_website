@@ -1,4 +1,4 @@
-package org.kangning.church.auth.application.port.in.user;
+package org.kangning.church.auth.application.port.in.user.password;
 
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.common.identifier.UserId;

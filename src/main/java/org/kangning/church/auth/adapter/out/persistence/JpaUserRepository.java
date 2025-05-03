@@ -41,4 +41,9 @@ public class JpaUserRepository implements UserRepositoryPort {
     public void deleteByAll() {
         userRepository.deleteAll();
     }
+
+    @Override
+    public Boolean existByAccount(String account){
+        return userRepository.existsByAccount(account);
+    }
 }

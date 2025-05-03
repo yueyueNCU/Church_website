@@ -1,9 +1,8 @@
 package org.kangning.church.auth.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.kangning.church.auth.application.port.in.user.GetMyInfoUseCase;
-import org.kangning.church.auth.adapter.in.dto.password.UserInfoResponse;
-import org.kangning.church.auth.application.port.in.user.UserInfoResult;
+import org.kangning.church.auth.application.port.in.user.password.GetMyInfoUseCase;
+import org.kangning.church.auth.application.port.in.user.password.UserInfoResult;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.exception.auth.UserNotFoundException;

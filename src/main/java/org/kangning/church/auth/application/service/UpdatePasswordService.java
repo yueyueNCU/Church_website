@@ -1,8 +1,8 @@
 package org.kangning.church.auth.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.kangning.church.auth.application.port.in.user.UpdatePasswordCommand;
-import org.kangning.church.auth.application.port.in.user.UpdatePasswordUseCase;
+import org.kangning.church.auth.application.port.in.user.password.UpdatePasswordCommand;
+import org.kangning.church.auth.application.port.in.user.password.UpdatePasswordUseCase;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.User;
 import org.kangning.church.common.exception.auth.NewPasswordSameAsOldException;

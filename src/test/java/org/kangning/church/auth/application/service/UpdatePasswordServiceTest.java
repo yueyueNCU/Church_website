@@ -2,7 +2,7 @@ package org.kangning.church.auth.application.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kangning.church.auth.application.port.in.user.UpdatePasswordCommand;
+import org.kangning.church.auth.application.port.in.user.password.UpdatePasswordCommand;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.common.identifier.UserId;
 import org.kangning.church.auth.domain.Role;

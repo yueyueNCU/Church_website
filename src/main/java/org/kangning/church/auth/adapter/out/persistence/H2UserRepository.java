@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface H2UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByUsername(String username);
     Optional<UserEntity> findByAccount(String account);
+    Boolean existsByAccount(String account);
 }

@@ -15,12 +15,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {"spring.profiles.active=test"})
@@ -53,15 +52,14 @@ class UserControllerTest {
         userId=user.getId();
     }
 
-
     @Test
-    void getMyInfo_no_token_should_return_unauthorized() throws Exception {
+    void getMyInfo_withInvalidToken_shouldReturnUnauthorized() throws Exception {
         mockMvc.perform(get("/api/user/me"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void getMyInfo_with_token_should_return_user_info() throws Exception {
+    void getMyInfo_withValidToken_shouldReturnOk() throws Exception {
         String token = TestJwtProvider.generateToken(
                 userId,
                 "john",
@@ -75,17 +73,12 @@ class UserControllerTest {
 
 
     @Test
-    void updatePassword_no_token_should_return_unauthorized(){
-        try {
-            mockMvc.perform(put("/api/user/password"))
+    void updatePassword_withoutToken_shouldReturnUnauthorized() throws Exception{
+        mockMvc.perform(put("/api/user/password"))
                     .andExpect(status().isUnauthorized());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
-
     @Test
-    void updatePassword_with_token_should_return_成功更新密碼() throws Exception {
+    void updatePassword_withValidToken_shouldReturnOk() throws Exception {
         String token = TestJwtProvider.generateToken(
                 userId,
                 "john",
@@ -102,6 +95,6 @@ class UserControllerTest {
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
     }
 }

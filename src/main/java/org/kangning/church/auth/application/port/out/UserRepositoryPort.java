@@ -12,4 +12,5 @@ public interface UserRepositoryPort  {
     Optional<User> findById(UserId id);
     Optional<User> findByAccount(String account);
     void deleteByAll();
+    Boolean existByAccount(String account);
 }
