@@ -32,7 +32,6 @@ public class ChurchMapper {
         e.setAddress(d.getAddress());
         e.setDescription(d.getDescription());
         e.setCreatedAt(d.getCreatedAt());
-        // UserEntity 不存 memberships，保持聚合分離
         return e;
     }
 }

@@ -8,8 +8,12 @@ import org.kangning.church.church.application.port.in.ChurchResult;
 import org.kangning.church.church.application.port.in.CreateChurchCommand;
 import org.kangning.church.church.application.port.out.ChurchRepositoryPort;
 import org.kangning.church.church.domain.Church;
+import org.kangning.church.churchRole.application.port.out.ChurchRoleRepositoryPort;
+import org.kangning.church.churchRole.domain.ChurchRole;
+import org.kangning.church.churchRole.domain.Permission;
 import org.kangning.church.common.exception.church.ChurchNameDuplicateException;
 import org.kangning.church.common.identifier.ChurchId;
+import org.kangning.church.common.identifier.ChurchRoleId;
 import org.kangning.church.common.identifier.UserId;
 import org.kangning.church.membership.application.port.out.MembershipRepositoryPort;
 import org.kangning.church.membership.domain.ChurchMemberStatus;
@@ -33,6 +37,8 @@ class ChurchServiceTest {
     private ChurchRepositoryPort churchRepository;
     @Mock
     private MembershipRepositoryPort membershipRepository;
+    @Mock
+    private ChurchRoleRepositoryPort churchRoleRepository;
 
     @InjectMocks
     private ChurchService churchService;
@@ -41,8 +47,20 @@ class ChurchServiceTest {
     void createChurch_success_should_return_church(){
         // Arrange
         when(churchRepository.existsByName("康寧街教會")).thenReturn(false);
+
         Church savedChurch = new Church(new ChurchId(42L), "康寧街教會", "台北", "建立於19xx", Instant.now());
         when(churchRepository.save(any())).thenReturn(savedChurch);
+
+        // 預期 ChurchRole：LEADER
+        ChurchRole leaderRole = new ChurchRole(
+                new ChurchRoleId(99L),
+                savedChurch.getId(),
+                "領袖",
+                true,
+                Set.of(Permission.ALL_PERMISSION)
+        );
+
+        when(churchRoleRepository.saveAll(any())).thenReturn(Set.of(leaderRole));
 
         CreateChurchCommand cmd = new CreateChurchCommand("康寧街教會", "台北", "建立於19xx");
         UserId userId = new UserId(1L);
@@ -58,10 +76,13 @@ class ChurchServiceTest {
         ArgumentCaptor<Membership> captor = ArgumentCaptor.forClass(Membership.class);
         verify(membershipRepository).save(captor.capture());
         Membership savedMembership = captor.getValue();
+
         assertEquals(userId, savedMembership.getUserId());
         assertEquals(savedChurch.getId(), savedMembership.getChurchId());
-        assertTrue(savedMembership.getRoles().contains(Role.LEADER));
         assertEquals(ChurchMemberStatus.APPROVED, savedMembership.getStatus());
+
+        assertEquals(1, savedMembership.getRoles().size());
+        assertTrue(savedMembership.getRoles().stream().anyMatch(r -> r.getName().equals("領袖")));
     }
 
     @Test
@@ -77,6 +98,7 @@ class ChurchServiceTest {
         });
 
         verify(churchRepository, never()).save(any());
+        verify(churchRoleRepository, never()).saveAll(any());
         verify(membershipRepository, never()).save(any());
     }
 
@@ -87,10 +109,15 @@ class ChurchServiceTest {
         ChurchId ch1 = new ChurchId(10L);
         ChurchId ch2 = new ChurchId(20L);
 
+        // 使用 ChurchRole 替代 Role
+        ChurchRole memberRole = new ChurchRole(null, ch1, "一般成員", true, Set.of());
+        ChurchRole leaderRole = new ChurchRole(null, ch2, "領袖", true, Set.of());
+
         List<Membership> memberships = List.of(
-                new Membership(null, ch1, userId, Set.of(Role.MEMBER), ChurchMemberStatus.APPROVED),
-                new Membership(null, ch2, userId, Set.of(Role.LEADER), ChurchMemberStatus.APPROVED)
+                new Membership(null, ch1, userId, Set.of(memberRole), ChurchMemberStatus.APPROVED),
+                new Membership(null, ch2, userId, Set.of(leaderRole), ChurchMemberStatus.APPROVED)
         );
+
         when(membershipRepository.findApprovedByUserId(userId)).thenReturn(memberships);
 
         Church church1 = new Church(ch1, "教會 A", "地址 A", "描述 A", Instant.now());
@@ -103,8 +130,8 @@ class ChurchServiceTest {
 
         // Assert
         assertEquals(2, results.size());
-        assertEquals("教會 A", results.get(0).name());
-        assertEquals("教會 B", results.get(1).name());
+        assertTrue(results.stream().anyMatch(c -> c.name().equals("教會 A")));
+        assertTrue(results.stream().anyMatch(c -> c.name().equals("教會 B")));
     }
 
     @Test
@@ -126,7 +153,7 @@ class ChurchServiceTest {
 
         // Assert
         assertEquals(2, results.size());
-        assertEquals("台北教會", results.get(0).name());
-        assertEquals("台中教會", results.get(1).name());
+        assertEquals(List.of("台北教會", "台中教會"),
+                results.stream().map(ChurchResult::name).toList());
     }
 }

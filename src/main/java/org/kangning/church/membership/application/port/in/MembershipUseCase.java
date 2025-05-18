@@ -1,6 +1,7 @@
 package org.kangning.church.membership.application.port.in;
 
 import org.kangning.church.auth.domain.Role;
+import org.kangning.church.churchRole.domain.ChurchRole;
 import org.kangning.church.common.identifier.ChurchId;
 import org.kangning.church.common.identifier.UserId;
 
@@ -14,7 +15,7 @@ public interface MembershipUseCase {
 
     void rejectMembership(ChurchId churchId, UserId userId);
 
-    void updateMembershipRole(ChurchId churchId, UserId userId, Set<Role> newRoles);
+    void updateMembershipRole(ChurchId churchId, UserId userId, Set<ChurchRole> newRoles);
 
     void removeMembership(ChurchId churchId, UserId userId);
 

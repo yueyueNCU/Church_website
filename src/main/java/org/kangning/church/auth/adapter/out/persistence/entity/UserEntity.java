@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.kangning.church.auth.domain.Role;
+import org.kangning.church.membership.adaptor.out.persistent.entity.MembershipEntity;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,4 +37,17 @@ public class UserEntity {
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private Set<Role> globalRoles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MembershipEntity> memberships = new ArrayList<>();
+
+    public void addMembership(MembershipEntity membership) {
+        memberships.add(membership);
+        membership.setUser(this);
+    }
+
+    public void removeMembership(MembershipEntity membership) {
+        memberships.remove(membership);
+        membership.setUser(null);
+    }
 }

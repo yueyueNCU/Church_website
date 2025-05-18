@@ -23,8 +23,26 @@ public class JpaChurchRepository implements ChurchRepositoryPort {
     private final ChurchMapper churchMapper;
 
     @Override
-    public Church save(Church church) {
-        ChurchEntity saved = churchRepository.save(churchMapper.toEntity(church));
+    public Church save(Church domain) {
+        ChurchEntity entity;
+
+        // 新增
+        if (domain.getId() == null) {
+            entity = churchMapper.toEntity(domain);
+
+            // 更新
+        } else {
+            entity = churchRepository.findById(domain.getId().value())
+                    .orElseThrow(() -> new RuntimeException("Church not found"));
+
+            // 手動更新 domain 中變動欄位（不要全覆蓋）
+            entity.setName(domain.getName());
+            entity.setAddress(domain.getAddress());
+            entity.setDescription(domain.getDescription());
+            // 其他欄位或關聯不動（如 memberships、churchRoles）
+        }
+
+        ChurchEntity saved = churchRepository.save(entity);
         return churchMapper.toDomain(saved);
     }
 

@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.kangning.church.auth.adapter.out.persistence.entity.UserEntity;
 import org.kangning.church.auth.domain.Role;
+import org.kangning.church.church.adapter.out.persistent.entity.ChurchEntity;
+import org.kangning.church.churchRole.adapter.out.entity.ChurchRoleEntity;
+import org.kangning.church.churchRole.domain.ChurchRole;
 import org.kangning.church.membership.domain.ChurchMemberStatus;
 
 import java.util.HashSet;
@@ -24,19 +28,20 @@ public class MembershipEntity {
     private Long id;
 
     /** 使用者 ID */
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    /** 教會 ID */
-    @Column(name = "church_id", nullable = false)
-    private Long churchId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "church_id", nullable = false)
+    private ChurchEntity church;
 
     /** 教會內角色 */
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "membership_roles", joinColumns = @JoinColumn(name = "membership_id"))
-    @Column(name = "role")
-    @Enumerated(EnumType.STRING)
-    private Set<Role> roles = new HashSet<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "membership_roles",
+            joinColumns = @JoinColumn(name = "membership_id"),
+            inverseJoinColumns = @JoinColumn(name = "church_role_id"))
+    private Set<ChurchRoleEntity> roles = new HashSet<>();
 
     /** 成員狀態（PENDING, APPROVED） */
     @Enumerated(EnumType.STRING)

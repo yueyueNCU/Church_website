@@ -6,8 +6,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
+import org.kangning.church.churchRole.domain.ChurchRole;
+import org.kangning.church.churchRole.domain.Permission;
 import org.kangning.church.common.exception.membership.MembershipAlreadyExistsException;
 import org.kangning.church.common.identifier.ChurchId;
+import org.kangning.church.common.identifier.ChurchRoleId;
 import org.kangning.church.common.identifier.UserId;
 import org.kangning.church.membership.application.port.out.MembershipRepositoryPort;
 import org.kangning.church.membership.domain.ChurchMemberStatus;
@@ -90,7 +93,16 @@ class MembershipServiceTest {
 
     @Test
     void getChurchMembers_shouldReturnApprovedList() {
-        Membership m = new Membership(null, churchId, userId, Set.of(Role.MEMBER), ChurchMemberStatus.APPROVED);
+
+        ChurchRole leaderRole = new ChurchRole(
+                new ChurchRoleId(99L),
+                churchId,
+                "領袖",
+                true,
+                Set.of(Permission.ALL_PERMISSION)
+        );
+
+        Membership m = new Membership(null, churchId, userId, Set.of(leaderRole), ChurchMemberStatus.APPROVED);
         when(membershipRepository.findAllByChurchId(churchId)).thenReturn(List.of(m));
         when(userRepository.findById(userId)).thenReturn(Optional.of(new User(userId, "john", "acc", "pwd", Set.of())));
 

@@ -6,6 +6,10 @@ import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.church.application.port.in.ChurchResult;
 import org.kangning.church.church.application.port.in.CreateChurchCommand;
+import org.kangning.church.churchRole.adapter.out.JpaChurchRoleRepository;
+import org.kangning.church.churchRole.application.port.out.ChurchRoleRepositoryPort;
+import org.kangning.church.churchRole.domain.ChurchRole;
+import org.kangning.church.churchRole.domain.Permission;
 import org.kangning.church.common.exception.membership.MembershipAlreadyExistsException;
 import org.kangning.church.common.identifier.ChurchId;
 import org.kangning.church.church.application.port.in.ChurchUseCase;
@@ -28,12 +32,27 @@ import java.util.Set;
 @Service
 public class ChurchService implements ChurchUseCase {
 
-
     private final ChurchRepositoryPort churchRepository;
 
     private final MembershipRepositoryPort membershipRepository;
+
+    private final ChurchRoleRepositoryPort churchRoleRepository;
+
+    private final JpaChurchRoleRepository jpaChurchRoleRepository;
+
+    private Set<ChurchRole> createDefaultRoles(ChurchId churchId){
+        ChurchRole leader = new ChurchRole(
+                null,
+                churchId,
+                "領袖",
+                true,
+                Set.of(Permission.ALL_PERMISSION)
+        );
+        return Set.of(leader);
+    }
+
     @Override
-    public Church createChurch(UserId id, CreateChurchCommand command) {
+    public Church createChurch(UserId userId, CreateChurchCommand command) {
         if(churchRepository.existsByName(command.name())) {
             throw new ChurchNameDuplicateException();
         }
@@ -46,11 +65,15 @@ public class ChurchService implements ChurchUseCase {
                 null
             )
         );
+        Set<ChurchRole> defaultUser= createDefaultRoles(church.getId());
+
+        Set<ChurchRole> savedDefaultUser= churchRoleRepository.saveAll(defaultUser);
+
         Membership membership= new Membership(
                 null,
                 church.getId(),
-                id,
-                Set.of(Role.LEADER),
+                userId,
+                savedDefaultUser,
                 ChurchMemberStatus.APPROVED
         );
         membershipRepository.save(membership);
@@ -75,6 +98,7 @@ public class ChurchService implements ChurchUseCase {
                         ch.getId(),
                         ch.getName(),
                         ch.getAddress(),
+
                         ch.getDescription(),
                         ch.getCreatedAt()
                 ))

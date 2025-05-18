@@ -42,7 +42,7 @@ class LoginServiceTest {
                 "john",
                 "TestAccount",
                 "encoded-password",
-                Set.of(Role.LEADER)
+                null
         );
 
         when(userRepository.findByAccount("TestAccount")).thenReturn(Optional.of(mockUser));
@@ -76,7 +76,7 @@ class LoginServiceTest {
                 "john",
                 "TestAccount",
                 "encoded-password",
-                Set.of(Role.LEADER)
+                null
         );
         when(userRepository.findByAccount("TestAccount")).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("wrong-password", "encoded-password")).thenReturn(false);

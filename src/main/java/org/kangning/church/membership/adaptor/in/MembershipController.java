@@ -25,7 +25,7 @@ public class MembershipController {
     private final MembershipUseCase membershipUseCase;
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_SITE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PERM_VIEW_MEMBERS','PERM_ALL_PERMISSION') or hasRole('SITE_ADMIN')")
     public ResponseEntity<List<MembersResponse>> getChurchMembers(
             @PathVariable ChurchId churchId
     ){
@@ -67,7 +67,7 @@ public class MembershipController {
         return ResponseEntity.ok().build();
     }
     @PatchMapping("/{userId}/approve")
-    @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_SITE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PERM_APPROVE_MEMBER','PERM_ALL_PERMISSION') or hasRole('SITE_ADMIN')")
     public ResponseEntity<Void> approveMembership(
             @PathVariable ChurchId churchId,
             @PathVariable UserId userId
@@ -77,7 +77,7 @@ public class MembershipController {
         return ResponseEntity.ok().build();
     }
     @PatchMapping("/{userId}/reject")
-    @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_SITE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PERM_REJECT_MEMBER','PERM_ALL_PERMISSION') or hasRole('SITE_ADMIN')")
     public ResponseEntity<Void> rejectMembership(
             @PathVariable ChurchId churchId,
             @PathVariable UserId userId
@@ -87,7 +87,7 @@ public class MembershipController {
         return ResponseEntity.ok().build();
     }
     @PatchMapping("/{userId}/roles")
-    @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_SITE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PERM_ASSIGN_ROLE','PERM_ALL_PERMISSION') or hasRole('SITE_ADMIN')")
     public ResponseEntity<Void> updateMembershipRole(
             @PathVariable Long churchId,
             @PathVariable Long userId,
@@ -102,7 +102,7 @@ public class MembershipController {
         return ResponseEntity.ok().build();
     }
     @GetMapping("/{userId}")
-    @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_SITE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PERM_ASSIGN_ROLE','PERM_ALL_PERMISSION') or hasRole('SITE_ADMIN')")
     public ResponseEntity<MembersResponse> getIndividualMembership(
             @PathVariable ChurchId churchId,
             @PathVariable UserId userId
@@ -114,7 +114,7 @@ public class MembershipController {
         return ResponseEntity.ok(response);
     }
     @DeleteMapping("/{userId}")
-    @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_SITE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PERM_REMOVE_MEMBER','PERM_ALL_PERMISSION') or hasRole('SITE_ADMIN')")
     public ResponseEntity<Void> removeMembership(
             @PathVariable ChurchId churchId,
             @PathVariable UserId userId

@@ -49,7 +49,7 @@ class UpdatePasswordServiceTest {
                 "john",
                 "TestAccount",
                 "encoded-password",
-                Set.of(Role.LEADER)
+                null
         );
         when(userRepository.findById(new UserId(1L))).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("wrongOldPassword", "encoded-password")).thenReturn(false);
@@ -66,7 +66,7 @@ class UpdatePasswordServiceTest {
                 "john",
                 "TestAccount",
                 "encoded-password",
-                Set.of(Role.LEADER)
+                null
         );
         when(userRepository.findById(new UserId(1L))).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
@@ -83,7 +83,7 @@ class UpdatePasswordServiceTest {
                 "john",
                 "TestAccount",
                 "encoded-password",
-                Set.of(Role.LEADER)
+                null
         );
         when(userRepository.findById(new UserId(1L))).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);
@@ -100,7 +100,7 @@ class UpdatePasswordServiceTest {
                 "john",
                 "TestAccount",
                 "encoded-password",
-                Set.of(Role.LEADER)
+                null
         );
         when(userRepository.findById(new UserId(1L))).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches("oldPassword", "encoded-password")).thenReturn(true);

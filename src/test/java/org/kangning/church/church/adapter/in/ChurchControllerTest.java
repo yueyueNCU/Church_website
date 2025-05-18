@@ -1,6 +1,7 @@
 package org.kangning.church.church.adapter.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.validator.internal.constraintvalidators.hv.ScriptAssertValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kangning.church.auth.adapter.out.persistence.entity.UserEntity;
@@ -11,6 +12,9 @@ import org.kangning.church.church.adapter.in.dto.CreateChurchRequest;
 import org.kangning.church.church.adapter.out.persistent.entity.ChurchEntity;
 import org.kangning.church.church.application.port.out.ChurchRepositoryPort;
 import org.kangning.church.church.domain.Church;
+import org.kangning.church.churchRole.application.port.out.ChurchRoleRepositoryPort;
+import org.kangning.church.churchRole.domain.ChurchRole;
+import org.kangning.church.churchRole.domain.Permission;
 import org.kangning.church.common.identifier.ChurchId;
 import org.kangning.church.common.identifier.UserId;
 import org.kangning.church.membership.application.port.out.MembershipRepositoryPort;
@@ -45,6 +49,9 @@ class ChurchControllerTest {
     private ChurchRepositoryPort churchRepository;
 
     @Autowired
+    private ChurchRoleRepositoryPort churchRoleRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -54,8 +61,17 @@ class ChurchControllerTest {
     @Autowired
     private MembershipRepositoryPort membershipRepository;
 
-    private ChurchId churchId;
-    private UserId userId;
+    private Set<ChurchRole> createDefaultRoles(ChurchId churchId){
+        ChurchRole leader = new ChurchRole(
+                null,
+                churchId,
+                "領袖",
+                true,
+                Set.of(Permission.ALL_PERMISSION)
+        );
+        return Set.of(leader);
+    }
+
     @BeforeEach
     void setup() {
         // 清空資料
@@ -68,9 +84,8 @@ class ChurchControllerTest {
                 "john",
                 "TestAccount",
                 passwordEncoder.encode("12345678"),
-                Set.of(Role.LEADER))
+                null)
         );
-        userId=savedUser.getId();
         Church savedChurch = churchRepository.save(new Church(
                 null,
                 "測試教會",
@@ -78,19 +93,18 @@ class ChurchControllerTest {
                 "建立於2005年",
                 null)
         );
-        churchId = savedChurch.getId();
-
         jwtToken = TestJwtProvider.generateToken(
                 savedUser.getId(),
                 savedUser.getUsername(),
-                Set.of(Role.LEADER)
+                Set.of()
         );
-
+        Set<ChurchRole> defaultRoles= createDefaultRoles(savedChurch.getId());
+        Set<ChurchRole> savedDefaultRoles= churchRoleRepository.saveAll(defaultRoles);
         membershipRepository.save(new Membership(
                 null,
-                churchId,
-                userId,
-                Set.of(Role.LEADER),
+                savedChurch.getId(),
+                savedUser.getId(),
+                savedDefaultRoles,
                 ChurchMemberStatus.APPROVED)
         );
 

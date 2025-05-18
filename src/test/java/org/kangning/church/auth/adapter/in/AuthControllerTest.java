@@ -44,8 +44,8 @@ class AuthControllerTest {
                 "john",
                 "TestAccount",
                 passwordEncoder.encode("12345678"),
-                Set.of(Role.LEADER))
-        );
+                null
+        ));
     }
 
     @Test

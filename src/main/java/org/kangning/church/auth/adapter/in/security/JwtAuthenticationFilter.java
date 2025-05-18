@@ -81,14 +81,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Church roles
         Optional<Membership> membership = membershipRepository.findByChurchIdAndUserId(new ChurchId(churchId),userId);
-
         if (churchId != null && membership.isPresent()) {
 
             authorities.addAll(membership.get().getRoles().stream()
-                    .map(role -> "ROLE_" + role.name())
+                    .flatMap(role -> role.getPermissions().stream())
+                    .map(permission -> "PERM_" + permission.name())
                     .toList());
         }
-
         UserPrincipal principal = new UserPrincipal(user.getId(), user.getUsername());
 
         var auth = new UsernamePasswordAuthenticationToken(

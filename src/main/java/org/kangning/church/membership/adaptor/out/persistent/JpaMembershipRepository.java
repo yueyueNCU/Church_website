@@ -1,6 +1,16 @@
 package org.kangning.church.membership.adaptor.out.persistent;
 
 import lombok.RequiredArgsConstructor;
+import org.kangning.church.auth.adapter.out.persistence.H2UserRepository;
+import org.kangning.church.auth.adapter.out.persistence.entity.UserEntity;
+import org.kangning.church.church.adapter.out.persistent.H2ChurchRepository;
+import org.kangning.church.church.adapter.out.persistent.entity.ChurchEntity;
+import org.kangning.church.churchRole.adapter.out.H2ChurchRoleRepository;
+import org.kangning.church.churchRole.adapter.out.entity.ChurchRoleEntity;
+import org.kangning.church.churchRole.adapter.out.mapper.ChurchRoleMapper;
+import org.kangning.church.churchRole.domain.ChurchRole;
+import org.kangning.church.common.exception.auth.UserNotFoundException;
+import org.kangning.church.common.exception.church.ChurchNotFoundException;
 import org.kangning.church.common.identifier.ChurchId;
 import org.kangning.church.common.identifier.UserId;
 import org.kangning.church.membership.adaptor.out.persistent.entity.MembershipEntity;
@@ -12,6 +22,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,10 +32,33 @@ public class JpaMembershipRepository implements MembershipRepositoryPort {
     private final H2MembershipRepository membershipRepository;
     private final MembershipMapper membershipMapper;
 
+    private final H2ChurchRepository churchRepository;
+    private final H2UserRepository userRepository;
+
+    private final H2ChurchRoleRepository churchRoleRepository;
+    private final ChurchRoleMapper roleMapper;
+
     @Override
-    public Membership save(Membership membership) {
-        MembershipEntity saved = membershipRepository.save(membershipMapper.toEntity(membership));
-        return membershipMapper.toDomain(saved);
+    public Membership save(Membership domain) {
+        MembershipEntity entity = membershipMapper.toEntity(domain);
+        // 在這裡查詢關聯
+        ChurchEntity church = churchRepository.findById(domain.getChurchId().value())
+                .orElseThrow(ChurchNotFoundException::new);
+        UserEntity user = userRepository.findById(domain.getUserId().value())
+                .orElseThrow(UserNotFoundException::new);
+
+        entity.setChurch(church);
+        entity.setUser(user);
+
+        if(domain.getRoles() != null) {
+            Set<ChurchRoleEntity> roleEntities = domain.getRoles().stream()
+                    .map(role -> churchRoleRepository.findById(role.getId().value())
+                            .orElseThrow(() -> new RuntimeException("Role not found: " + role.getId())))
+                    .collect(Collectors.toSet());
+            entity.setRoles(roleEntities);
+        }
+
+        return membershipMapper.toDomain(membershipRepository.save(entity));
     }
 
     @Override

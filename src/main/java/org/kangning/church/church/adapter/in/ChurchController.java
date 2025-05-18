@@ -37,6 +37,7 @@ public class ChurchController {
         CreateChurchCommand command = new CreateChurchCommand(request.name(), request.address(), request.description());
 
         Church church=churchUseCase.createChurch(principal.id(), command);
+
         ChurchResponse response = new ChurchResponse(church.getId(), church.getName(), church.getAddress(), church.getDescription(), church.getCreatedAt());
 
         return ResponseEntity

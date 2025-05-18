@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import org.kangning.church.auth.application.port.out.UserRepositoryPort;
 import org.kangning.church.auth.domain.Role;
 import org.kangning.church.auth.domain.User;
+import org.kangning.church.churchRole.domain.ChurchRole;
+import org.kangning.church.common.exception.auth.UserNotFoundException;
 import org.kangning.church.common.exception.membership.ChurchApplicantNotExistException;
 import org.kangning.church.common.exception.membership.MembershipAlreadyExistsException;
 import org.kangning.church.common.exception.membership.MembershipNotFoundException;
@@ -13,6 +15,7 @@ import org.kangning.church.common.identifier.UserId;
 import org.kangning.church.membership.application.port.in.MemberResult;
 import org.kangning.church.membership.application.port.in.MembershipUseCase;
 import org.kangning.church.membership.application.port.out.MembershipRepositoryPort;
+import org.kangning.church.membership.domain.ChurchMemberStatus;
 import org.kangning.church.membership.domain.Membership;
 import org.springframework.stereotype.Service;
 
@@ -41,10 +44,10 @@ public class MembershipService implements MembershipUseCase {
         Membership membership = membershipRepository
                 .findByChurchIdAndUserId(churchId, userId)
                 .orElseThrow(ChurchApplicantNotExistException::new);
-
         if (membership.isApproved()) throw new MembershipAlreadyExistsException();
 
-        membership.approve(List.of(Role.MEMBER));
+        membership.setStatus(ChurchMemberStatus.APPROVED);
+
         membershipRepository.save(membership);
 
 
@@ -62,14 +65,15 @@ public class MembershipService implements MembershipUseCase {
     }
 
     @Override
-    public void updateMembershipRole(ChurchId churchId, UserId userId, Set<Role> newRoles) {
+    public void updateMembershipRole(ChurchId churchId, UserId userId, Set<ChurchRole> newRoles) {
         Membership membership = membershipRepository
                 .findByChurchIdAndUserId(churchId, userId)
                 .orElseThrow(ChurchApplicantNotExistException::new);
 
         if (!membership.isApproved()) throw new IllegalStateException("未核准會員不得調整角色");
 
-        membership.approve(List.copyOf(newRoles));
+        membership.setRoles(newRoles);
+
         membershipRepository.save(membership);
     }
 
@@ -91,7 +95,7 @@ public class MembershipService implements MembershipUseCase {
                 .map(m -> {
                     String username = userRepository.findById(m.getUserId())
                             .map(User::getUsername)
-                            .orElse("unknown"); // 可加例外處理
+                            .orElseThrow(UserNotFoundException::new);
 
                     return new MemberResult(
                             m.getUserId(),
@@ -111,7 +115,7 @@ public class MembershipService implements MembershipUseCase {
 
         String username = userRepository.findById(membership.getUserId())
                 .map(User::getUsername)
-                .orElse("unknown"); // 可加例外處理
+                .orElseThrow(UserNotFoundException::new);
 
         return new MemberResult(membership.getUserId(), username, membership.getRoles(), membership.getStatus());
     }

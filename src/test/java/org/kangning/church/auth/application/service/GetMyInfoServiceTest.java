@@ -33,7 +33,7 @@ class GetMyInfoServiceTest {
                 "john",
                 "TestAccount",
                 "encoded-password",
-                Set.of(Role.LEADER)
+                null
         );
         when(userRepositoryPort.findById(new UserId(1L)))
                 .thenReturn(Optional.of(mockUser));

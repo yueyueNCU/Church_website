@@ -48,7 +48,8 @@ class UserControllerTest {
                 "john",
                 "TestAccount",
                 passwordEncoder.encode("12345678"),
-                Set.of(Role.LEADER)));
+                null
+        ));
         userId=user.getId();
     }
 
@@ -63,7 +64,7 @@ class UserControllerTest {
         String token = TestJwtProvider.generateToken(
                 userId,
                 "john",
-                Set.of(Role.LEADER)
+                Set.of()
         );
 
         mockMvc.perform(get("/api/user/me")
@@ -82,7 +83,7 @@ class UserControllerTest {
         String token = TestJwtProvider.generateToken(
                 userId,
                 "john",
-                Set.of(Role.LEADER)
+                Set.of()
         );
 
         var request = new UpdatePasswordRequest(
